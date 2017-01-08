@@ -1,0 +1,74 @@
+
+; Hacker Disassembler Engine 32
+; Copyright (c) 2006-2009, Vyacheslav Patkov.
+; All rights reserved.
+
+; hde32.masm: masm/tasm header file
+
+hde32_disasm proto c :dword, :dword
+
+F_MODRM         equ 00000001h
+F_SIB           equ 00000002h
+F_IMM8          equ 00000004h
+F_IMM16         equ 00000008h
+F_IMM32         equ 00000010h
+F_DISP8         equ 00000020h
+F_DISP16        equ 00000040h
+F_DISP32        equ 00000080h
+F_RELATIVE      equ 00000100h
+F_2IMM16        equ 00000800h
+F_ERROR         equ 00001000h
+F_ERROR_OPCODE  equ 00002000h
+F_ERROR_LENGTH  equ 00004000h
+F_ERROR_LOCK    equ 00008000h
+F_ERROR_OPERAND equ 00010000h
+F_PREFIX_REPNZ  equ 01000000h
+F_PREFIX_REPX   equ 02000000h
+F_PREFIX_REP    equ 03000000h
+F_PREFIX_66     equ 04000000h
+F_PREFIX_67     equ 08000000h
+F_PREFIX_LOCK   equ 10000000h
+F_PREFIX_SEG    equ 20000000h
+F_PREFIX_ANY    equ 3f000000h
+
+PREFIX_SEGMENT_CS   equ 02eh
+PREFIX_SEGMENT_SS   equ 036h
+PREFIX_SEGMENT_DS   equ 03eh
+PREFIX_SEGMENT_ES   equ 026h
+PREFIX_SEGMENT_FS   equ 064h
+PREFIX_SEGMENT_GS   equ 065h
+PREFIX_LOCK         equ 0f0h
+PREFIX_REPNZ        equ 0f2h
+PREFIX_REPX         equ 0f3h
+PREFIX_OPERAND_SIZE equ 066h
+PREFIX_ADDRESS_SIZE equ 067h
+
+hde32s struct
+  len       db ?
+  p_rep     db ?
+  p_lock    db ?
+  p_seg     db ?
+  p_66      db ?
+  p_67      db ?
+  opcode    db ?
+  opcode2   db ?
+  modrm     db ?
+  modrm_mod db ?
+  modrm_reg db ?
+  modrm_rm  db ?
+  sib       db ?
+  sib_scale db ?
+  sib_index db ?
+  sib_base  db ?
+  union imm
+    imm8    db ?
+    imm16   dw ?
+    imm32   dd ?
+  ends
+  union disp
+    disp8   db ?
+    disp16  dw ?
+    disp32  dd ?
+  ends
+  flags     dd ?
+hde32s ends

@@ -1,0 +1,87 @@
+%% eurosis.sty
+%% A simple style package conforming (more or less) to EUROSIS guidelines 
+%% for paper submission. The packsge should be used as shown in the
+%% example.tex file that comes with this style.
+%% Generaly, the style should be used in combination with article class
+%% with a4paper and two column layout:
+%%
+%% \documentclass[a4paper,twocolumn]{article}
+%% \usepackage{eurosis}
+%%
+%% It is the user's responsibility to capitalise section headings and
+%% paper's title according to the EUROSIS guidelines:
+%%
+%% \title{TITLE IN ALLCAPS}
+%%
+%% \section{SECTION HEADINGS}
+%% \subsection{Second level headings}
+%% \subsubsection{Third level headings}
+%%
+%% This style has been put together by:
+%% Jacek C. Wojdel
+%% J.C.Wojdel@cs.tudelft.nl
+%% November 2001, Delft, The Netherlands
+
+%%
+%% Those are settings of the page and text size
+%%
+\setlength{\columnsep}{1cm}
+\setlength{\textwidth}{18cm}
+\setlength{\textheight}{24cm}
+\setlength{\topmargin}{-1.5cm}
+\setlength{\oddsidemargin}{-1cm}
+\setlength{\evensidemargin}{-1cm}
+\pagestyle{empty}
+
+%%
+%% New simplified section, subsection, abstract and keywords
+%% commands. I hope you don't refer to sections in paper, as they
+%% don't use counters, so \label \ref would not work properly (but
+%% sections are not numbered anyway, so that makes no sense).
+%%
+\setcounter{secnumdepth}{-1}
+\renewcommand{\section}{\@startsection
+{section}%
+{1}%
+{0em}%
+{\baselineskip}%
+{\baselineskip}%
+{\normalsize\bf}}
+\renewcommand{\subsection}{\@startsection
+{subsection}%
+{2}%
+{0em}%
+{\baselineskip}%
+{\baselineskip}%
+{\normalsize\bf}}
+\renewcommand{\subsubsection}{\@startsection
+{subsubsection}%
+{3}%
+{0em}%
+{\baselineskip}%
+{0.01cm}%
+{\normalsize\it}}
+\newcommand{\keywords}[1]{{\bf KEYWORDS}\par #1\par}
+\renewcommand{\refname}{REFERENCES}
+\renewcommand{\abstractname}{ABSTRACT}
+
+\def\@maketitle{%
+  \newpage
+  \null
+  \vskip 2em%
+  \begin{center}%
+  \let \footnote \thanks
+    {\large \bf  \@title \par}%
+    \vskip 1.5em%
+    {\normalsize
+      \lineskip .5em%
+      \begin{tabular}[t]{c}%
+        \@author
+      \end{tabular}\par}%
+    \vskip 1em%
+    {\normalsize \@date}%
+  \end{center}%
+  \par
+  \vskip 1.5em}
+
+\setlength{\parindent}{0cm}

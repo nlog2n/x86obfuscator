@@ -1,0 +1,182 @@
+
+Hacker Disassembler Engine 32 0.28 FINAL
+========================================
+
+ 1. What is it?
+ 2. How to use?
+ 3. Commands with two immediates
+ 4. Invalid instructions
+ 5. Contacts
+
+My english is VERY bad, I hope that you understand me ;) If you can translate
+the russian documentation -- email me, please :)
+
+1. What is it?
+==============
+
+HDE32 is a small disassembler engine, intended for analysis of x86-32 code. It
+gets information about instruction (length, prefixes, opcode, ModR/M, SIB,..)
+and also detects invalid instructions. You can use the engine, for example,
+when working with executables, writing viruses, because most disassemblers too
+big, get only assembler mnemonic and aren't intended for analysis of code, but
+most simple length disassemblers get too little info. HDE32 gets enough info
+for analysis, but it has very small size.
+
+  + support General-Purpose, FPU, MMX, SSE-SSE3, 3DNow! instructions
+  + high speed and small size (~ 1.5 KB)
+  + position independent code
+  + operating system independent code
+
+The engine is written on i386-32 assembler, but if you don't want to depend of
+the processor, you can use C version (HDE32C) of HDE32, which you can download
+from www site (see section 5).
+
+2. How to use?
+==============
+
+To disassemble an instruction you should call "hde32_disasm" function. First
+argument is pointer to code, second -- pointer to "hde32s" structure:
+
+  unsigned int hde32_disasm(const void *code, hde32s *hs);
+
+You should follow C convention of arguments passing. The function returns
+length of the instruction and fill "hde32s" structure:
+
+  typedef struct {
+      uint8_t len;         // length of command
+      uint8_t p_rep;       // rep/repz (0xf3) & repnz (0xf2) prefix
+      uint8_t p_lock;      // lock prefix: 0xf0
+      uint8_t p_seg;       // segment prefix: 0x26,0x2e,0x36,0x3e,0x64,0x65
+      uint8_t p_66;        // operand-size override prefix: 0x66
+      uint8_t p_67;        // address-size override prefix: 0x67
+      uint8_t opcode;      // opcode
+      uint8_t opcode2;     // second opcode (if first opcode is 0x0f)
+      uint8_t modrm;       // ModR/M
+      uint8_t modrm_mod;   //   ModR/M.mod
+      uint8_t modrm_reg;   //   ModR/M.reg
+      uint8_t modrm_rm;    //   ModR/M.r/m
+      uint8_t sib;         // SIB
+      uint8_t sib_scale;   //   SIB.scale
+      uint8_t sib_index;   //   SIB.index
+      uint8_t sib_base;    //   SIB.base
+      union {
+          uint8_t imm8;    // immediate value imm8
+          uint16_t imm16;  // immediate value imm16
+          uint32_t imm32;  // immediate value imm32
+      } imm;
+      union {
+          uint8_t disp8;   // displacement disp8
+          uint16_t disp16; // displacement disp16
+          uint32_t disp32; // displacement disp32
+      } disp;
+      uint32_t flags;      // flags
+  } hde32s;
+
+Special cases of immediate values are relative addresses. In previous versions
+of the engine this values stores to hde32s.rel* fields. But now it stored to
+hde32s.imm* as all others immediates. You can detect relative address by flag
+F_RELATIVE, which setted with one of F_IMM* flags (see below).
+
+Alignment of structure "hde32s" is 1 byte (no alignment). Be careful, check
+settings of your compiler or use headers from this package.
+
+Fields "hde32s.opcode" and "hde32s.len" will be filled always. Presence of
+other fields you can get with following flags in "hde32s.flags":
+
+  #define F_MODRM        0x00000001  // ModR/M exists
+  #define F_SIB          0x00000002  // SIB exists
+  #define F_IMM8         0x00000004  // immediate value imm8 exists
+  #define F_IMM16        0x00000008  // immediate value imm16 exists
+  #define F_IMM32        0x00000010  // immediate value imm32 exists
+  #define F_DISP8        0x00000020  // displacement disp8 exists
+  #define F_DISP16       0x00000040  // displacement disp16 exists
+  #define F_DISP32       0x00000080  // displacement disp32 exists
+  #define F_RELATIVE     0x00000100  // imm* is relative address
+  #define F_PREFIX_REPNZ 0x01000000  // repnz prefix exists
+  #define F_PREFIX_REPX  0x02000000  // rep(z) prefix exists
+  #define F_PREFIX_REP   0x03000000  // rep(z) or repnz prefix exists
+  #define F_PREFIX_66    0x04000000  // 0x66 prefix exists
+  #define F_PREFIX_67    0x08000000  // 0x67 prefix exists
+  #define F_PREFIX_LOCK  0x10000000  // lock prefix exists
+  #define F_PREFIX_SEG   0x20000000  // segment prefix exists
+  #define F_PREFIX_ANY   0x3f000000  // any prefix esists
+
+HDE32 guaranteed that it read from "const void *code" no more than 26 bytes,
+but if instruction is valid (see section 4), than HDE32 read no more than
+"hde32s.len" bytes ("hde32s.len" always no more than 15).
+
+3. Commands with two immediates
+===============================
+
+Instructions "(jmp|call) ptr16:(16|32)" contain two immediate values. HDE32
+save first value (correspond to second part of argument in mnemonic view) in
+the "hde32s.imm*". Second value will be saved in the "hde32s.disp*" field.
+On case of "ptr16:16" argument, HDE32 also set flag "F_2IMM16" to note about
+two imm16:
+
+  #define F_2IMM16 0x00000800
+
+4. Invalid instructions
+=======================
+
+HDE32 analyses instruction for invalid, and do it thoroughly (more than half of
+the size of engine is code and tables for detecting invalid instructions). If
+HDE32 think, that instruction is invalid, it set flag "F_ERROR":
+
+  #define F_ERROR 0x00001000
+
+Besides, HDE32 set flags to explain type of error:
+
+  #define F_ERROR_OPCODE  0x00002000  // invalid opcode
+  #define F_ERROR_LENGTH  0x00004000  // length of command more than 15
+  #define F_ERROR_LOCK    0x00008000  // prefix lock isn't allowed
+  #define F_ERROR_OPERAND 0x00010000  // operand isn't allowed
+
+On case of "F_ERROR_OPCODE" flag, under notion "opcode" is understood not only
+"hde32s.opcode(2)" byte, but besides opcode's extension in ModR/M.reg, ModR/M
+or prefix (when two-byte opcode). So, HDE32 detects commands like "c6 c8 00"
+as invalid, because opcode "c6 /1" is invalid.
+
+If HDE32 setted flag "F_ERROR_LENGTH", then field "hde32s.len" is 15, so
+maximal value of "hde32s.len" is 15.
+
+There are intructions, which are valid for some x86-32 processors and invalid
+for other processors from this series. HDE32 intended to work with all x86-32
+processors, so when it check instructions for invalid, it follow principe:
+
+ Instruction is valid, if it work on all x86-32 processors, even if the
+ command is undocumented (for example "salc"). All documented instructions
+ of Pentium 4 Prescott and all correct FPU, MMX, SSE-SSE3, 3DNow! instructions
+ are valid.
+ All others instruction (for example, ones that work only on some processors
+ of x86-32 series) HDE mark as invalid.
+
+If engine detect instruction as invalid, it doesn't stop disassembling and
+continue disassembling in general rules. So, for example, command "0f 24 00
+(mov eax,tr0)" will be disassembled right, but error flag will be setted,
+because this instruction work only on i386/i486 processors.
+
+If you don't need to detect invalid instructions, you can use old versions
+of HDE32, which have size less in ~2.5 times.
+
+5. Contacts
+===========
+
+Author: Vyacheslav Patkov
+E-mail: patkov-mail at mail.ru
+WWW: http://hde32.narod.ru/
+
+Please, mail me on russian or english language. Use text format of email, don't
+send me beautiful HTML or (oh my God) DOC messages.
+
+P. S.
+
+HDE32 tested VERY thoroughly. If you think that found bug -- reread this manual
+and check YOUR program for bugs. If problem isn't disapper -- email me.
+
+Besides, I'm interesting about any using of the engine in your project ;)
+
+I freeze the current versions of HDE and not longer develop it, because in my
+opinion it have achieved all that I wanted originally. Potential next version
+will bug fix only (so, probably this is really final version). If YOU want add
+new features, etc. -- fork it.

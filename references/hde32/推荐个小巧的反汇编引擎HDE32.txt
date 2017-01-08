@@ -1,0 +1,28 @@
+
+推荐个小巧的反汇编引擎HDE32
+
+Hacker Disassembler Engine 32，不到1K的代码实现了x86的反汇编引擎，并且提供了足够的信息，如length、prefixes、opcode等，用来做inline hook这些的足够了。帖个例子：
+
+#include <iostream>
+#include "hde32/hde32.h"
+ 
+#pragma comment(lib, "hde32/hde32.a")
+ 
+int main()
+{
+  hde32s hs;
+  void* code = (void*)0x00401006;  //point to the code
+ 
+  unsigned int len = hde32_disasm(code,&hs);
+ 
+  printf("\n\n"
+    "  length:  0x%02x\n"
+    "  opcode:        0x%02x\n",
+    len,hs.opcode);
+ 
+  return 0;
+}
+
+注意VC编译的话得自己去下个C99的stdint.h，hde32.h里有下载地址
+
+hde32 web – http://patkov-site.narod.ru/

@@ -1,0 +1,64 @@
+
+; Hacker Disassembler Engine 32
+; Copyright (c) 2006-2009, Vyacheslav Patkov.
+; All rights reserved.
+
+; hde32.fasm: fasm header file
+
+F_MODRM         = 00000001h
+F_SIB           = 00000002h
+F_IMM8          = 00000004h
+F_IMM16         = 00000008h
+F_IMM32         = 00000010h
+F_DISP8         = 00000020h
+F_DISP16        = 00000040h
+F_DISP32        = 00000080h
+F_RELATIVE      = 00000100h
+F_2IMM16        = 00000800h
+F_ERROR         = 00001000h
+F_ERROR_OPCODE  = 00002000h
+F_ERROR_LENGTH  = 00004000h
+F_ERROR_LOCK    = 00008000h
+F_ERROR_OPERAND = 00010000h
+F_PREFIX_REPNZ  = 01000000h
+F_PREFIX_REPX   = 02000000h
+F_PREFIX_REP    = 03000000h
+F_PREFIX_66     = 04000000h
+F_PREFIX_67     = 08000000h
+F_PREFIX_LOCK   = 10000000h
+F_PREFIX_SEG    = 20000000h
+F_PREFIX_ANY    = 3f000000h
+
+PREFIX_SEGMENT_CS   = 02eh
+PREFIX_SEGMENT_SS   = 036h
+PREFIX_SEGMENT_DS   = 03eh
+PREFIX_SEGMENT_ES   = 026h
+PREFIX_SEGMENT_FS   = 064h
+PREFIX_SEGMENT_GS   = 065h
+PREFIX_LOCK         = 0f0h
+PREFIX_REPNZ        = 0f2h
+PREFIX_REPX         = 0f3h
+PREFIX_OPERAND_SIZE = 066h
+PREFIX_ADDRESS_SIZE = 067h
+
+struct hde32s
+  len       db ?
+  p_rep     db ?
+  p_lock    db ?
+  p_seg     db ?
+  p_66      db ?
+  p_67      db ?
+  opcode    db ?
+  opcode2   db ?
+  modrm     db ?
+  modrm_mod db ?
+  modrm_reg db ?
+  modrm_rm  db ?
+  sib       db ?
+  sib_scale db ?
+  sib_index db ?
+  sib_base  db ?
+  imm       dd ?
+  disp      dd ?
+  flags     dd ?
+ends
